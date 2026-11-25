@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Giveaway Entries — Admin | SIGMA PACK</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#0a0a18;color:#f4f2ea;font-family:'Poppins',Arial,sans-serif;padding:22px 16px}
+  .wrap{max-width:860px;margin:0 auto}
+  h1{font-size:24px;margin-bottom:4px} h1 b{color:#f5b921}
+  .sub{color:#a7a5c4;font-size:14px;margin-bottom:22px}
+  .card{background:#15152e;border:1px solid #2a2a4d;border-radius:16px;padding:22px;margin-bottom:18px}
+  label{display:block;font-size:13px;color:#a7a5c4;margin-bottom:7px}
+  input{width:100%;background:#101024;border:1px solid #2a2a4d;border-radius:11px;padding:13px 14px;color:#f4f2ea;font-size:15px;font-family:inherit;outline:none}
+  input:focus{border-color:#f5b921}
+  .btn{background:linear-gradient(92deg,#f5b921,#ffcf4d);color:#221a00;font-weight:700;border:none;padding:12px 24px;border-radius:11px;cursor:pointer;font-family:inherit;font-size:14.5px;margin-top:14px}
+  .btn.ghost{background:transparent;color:#f4f2ea;border:1.4px solid #2a2a4d}
+  .btn.del{background:#5a1f1f;color:#ffb4b4;border:1px solid #7a2d2d;padding:8px 14px;margin-top:0;font-size:13px}
+  .err{color:#ff6b6b;font-size:14px;margin-top:10px;min-height:18px}
+  .entry{display:flex;gap:16px;background:#101024;border:1px solid #2a2a4d;border-radius:14px;padding:16px;margin-bottom:13px;flex-wrap:wrap}
+  .entry img{width:130px;height:130px;object-fit:cover;border-radius:11px;border:1px solid #2a2a4d;cursor:pointer}
+  .entry .info{flex:1;min-width:220px;font-size:14px;line-height:1.75}
+  .entry .info b{font-size:16px}
+  .entry .info a{color:#f5b921}
+  .entry .meta{color:#a7a5c4;font-size:12.5px}
+  .count{font-size:17px;margin-bottom:16px} .count b{color:#f5b921}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>SIGMA PACK <b>VIP Giveaway</b> — Entries</h1>
+  <p class="sub">Admin only. Verify screenshots here, then send VIP access to the winner's WhatsApp number.</p>
+
+  <div class="card" id="loginCard">
+    <label>Admin Password</label>
+    <input type="password" id="pw" placeholder="Enter admin password" autocomplete="current-password">
+    <button class="btn" id="loginBtn">View Entries</button>
+    <p class="err" id="loginErr"></p>
+  </div>
+
+  <div id="listBox" style="display:none">
+    <p class="count" id="countLine"></p>
+    <div id="entries"></div>
+    <button class="btn ghost" id="refreshBtn">↻ Refresh</button>
+    <button class="btn ghost" id="logoutBtn">Logout</button>
+  </div>
+</div>
+
+<script>
+  const API = 'https://tallu-broq-api.vercel.app/api/giveaway';
+  const $ = id => document.getElementById(id);
+  const pass = () => sessionStorage.getItem('gw-admin-pass') || '';
+
+  async function load(){
+    const r = await fetch(API + '?list=1', { headers: { 'x-admin-pass': pass() } });
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error || 'unauthorized');
+    $('loginCard').style.display = 'none';
+    $('listBox').style.display = 'block';
+    $('countLine').innerHTML = 'Total Entries: <b>' + j.entries.length + '</b>';
+    const box = $('entries');
+    box.innerHTML = j.entries.length ? '' : '<p style="color:#a7a5c4">No entries yet.</p>';
+    j.entries.slice().reverse().forEach(e => {
+      const d = document.createElement('div');
+      d.className = 'entry';
+      d.innerHTML = '<img alt="screenshot"><div class="info">' +
+        '<b>' + e.name + '</b><br>' +
+        '📧 ' + e.gmail + '<br>' +
+        '🏙 ' + e.city + '<br>' +
+        '📱 <a href="https://wa.me/' + e.whatsapp + '" target="_blank" rel="noopener">' + e.whatsapp + '</a><br>' +
+        '<span class="meta">' + e.date + ' • ID: ' + e.id + '</span></div>';
+      const del = document.createElement('button');
+      del.className = 'btn del'; del.textContent = 'Delete';
+      del.addEventListener('click', async () => {
+        if (!confirm('Delete this entry?')) return;
+        await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-pass': pass() }, body: JSON.stringify({ action: 'delete', id: e.id }) });
+        load();
+      });
+      d.appendChild(del);
+      box.appendChild(d);
+      fetch(API + '?img=' + e.img, { headers: { 'x-admin-pass': pass() } })
+        .then(r => r.blob()).then(b => { d.querySelector('img').src = URL.createObjectURL(b); })
+        .catch(() => {});
+      d.querySelector('img').addEventListener('click', () => window.open(d.querySelector('img').src, '_blank'));
+    });
+  }
+
+  $('loginBtn').addEventListener('click', async () => {
+    sessionStorage.setItem('gw-admin-pass', $('pw').value);
+    try { await load(); } catch(e) { $('loginErr').textContent = 'Wrong password.'; sessionStorage.removeItem('gw-admin-pass'); }
+  });
+  $('refreshBtn').addEventListener('click', load);
+  $('logoutBtn').addEventListener('click', () => { sessionStorage.removeItem('gw-admin-pass'); location.reload(); });
+  if (pass()) load().catch(() => sessionStorage.removeItem('gw-admin-pass'));
+</script>
+</body>
+</html>
