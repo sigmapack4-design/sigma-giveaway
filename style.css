@@ -18,7 +18,7 @@ img{max-width:100%}
 .brand img{width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid var(--gold);display:block}
 .brand-t{font-size:19px;letter-spacing:.6px;font-weight:600}
 .brand-t b{color:var(--gold);font-weight:800}
-.vip-chip{background:linear-gradient(92deg,var(--gold),var(--gold2));color:#221a00;font-size:11px;font-weight:800;letter-spacing:1.2px;padding:5px 11px;border-radius:99px}
+.vip-chip{background:linear-gradient(92deg,var(--gold),var(--gold2));color:#221a00;font-size:11px;font-weight:800;letter-spacing:1.2px;padding:5px 11px;border-radius:99px;white-space:nowrap}
 
 /* buttons */
 .btn{display:inline-block;padding:12px 26px;border-radius:12px;font-weight:700;font-size:15px;border:none;cursor:pointer;font-family:inherit;position:relative;overflow:hidden;transition:transform .15s ease;text-align:center}
@@ -124,4 +124,6 @@ img{max-width:100%}
   .hero-btns .btn{width:100%}
   .linkrow .btn{flex:1}
   .brand-t{font-size:16.5px}
+  .vip-chip{font-size:9.5px;padding:4px 8px;letter-spacing:.6px}
+  .topbar .btn.sm{padding:8px 13px;font-size:13px}
 }
